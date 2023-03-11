@@ -126,10 +126,12 @@ public class LoginController {
 				} catch(UserRegisteredException e){
 					Response r = new Response();
 					r.setError("User already registered");
+					r.setStatus(400);
 					return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(r);
 				}
 			      Response res = new Response();
 				  res.setData(resDto);
+				  res.setStatus(200);
 				  res.setError(null);
 				  return ResponseEntity.status(HttpStatus.CREATED).body(res);
 			} else {
@@ -140,14 +142,17 @@ public class LoginController {
 		} catch(UsernameNullException e){
 			Response res = new Response();
 			res.setError("Username is null or empty");
+			res.setStatus(400);
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
 		} catch(PasswordNullException e){
 			Response res = new Response();
 			res.setError("Password is null or empty");
+			res.setStatus(400);
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
 		} catch(EmailNullException e){
 			Response res = new Response();
 			res.setError("Email is null or empty");
+			res.setStatus(400);
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
 		} 
 	}
@@ -242,10 +247,12 @@ public class LoginController {
 					resData = services.getUser(udto.getUsername(),udto.getPassword());
 				} catch(InvalidCredentialsException e) {
 					Response res = new Response();
+					res.setStatus(400);
 					res.setError("Invalid Credentials");
 					return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
 				}
 				Response res = new Response();
+				res.setStatus(200);
 				res.setData(resData);
 				return ResponseEntity.status(HttpStatus.OK).body(res);
 			} else {
@@ -253,6 +260,7 @@ public class LoginController {
 			}
 		} catch(UsernameNullException e) {
 			Response res = new Response();
+			res.setStatus(400);
 			res.setError("Username null or empty");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
 		}
