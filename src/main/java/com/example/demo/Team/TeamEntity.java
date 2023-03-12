@@ -40,14 +40,21 @@ public class TeamEntity {
 	@OneToMany(mappedBy="team",cascade= {CascadeType.MERGE, CascadeType.PERSIST} ,fetch = FetchType.LAZY)
 	private Set<UserEntity> players;
 	
-	@ManyToOne
-	@JoinColumn(name="match_Id")
-	private MatchEntity matchId;
+	@ManyToMany(mappedBy="teams")
+	private Set<MatchEntity> match;
 
 	public String getGame() {
 		return game;
 	}
 	
+	public Set<MatchEntity> getMatch() {
+		return match;
+	}
+
+	public void setMatch(Set<MatchEntity> match) {
+		this.match = match;
+	}
+
 	public String getTeamName() {
 		return teamName;
 	}

@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -7,6 +8,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -30,10 +32,43 @@ import com.example.demo.user.UserDto;
 
 @RestController
 @RequestMapping("/csl-1.0/rest/api")
+@CrossOrigin(origins ="*")
 public class LoginController {
 
 	@Autowired
 	public LoginServicesImplementation services;
+	
+	@GetMapping("/roles/getroles")
+	public ResponseEntity<Response> getRoles(){
+		List<String> ls = null;
+		try {
+			ls = services.getRoles();
+		} catch(RoleNotFoundException e) {
+			Response r = new Response();
+			r.setError("Role not found");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(r);
+		}
+		Response res = new Response();
+		res.setResponseDataCollection(ls);
+		res.setError(null);
+		return ResponseEntity.status(HttpStatus.OK).body(res);
+	}
+	
+	@PostMapping("/roles/postroles")
+	public ResponseEntity<Response> postRoles(@RequestBody RoleDto rdto){
+		List<String> ls = null;
+		try {
+			ls = services.postRoles(rdto);
+		} catch(RoleFoundException e) {
+			Response r = new Response();
+			r.setError("Role found");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(r);
+		}
+		Response res = new Response();
+		res.setResponseDataCollection(ls);
+		res.setError(null);
+		return ResponseEntity.status(HttpStatus.OK).body(res);
+	}
 	
 	@GetMapping("/getUsernames")
 	public ResponseEntity<Response> getUsernames(){
@@ -57,13 +92,9 @@ public class LoginController {
 		List<String> ls = null;
 		try {
 			ls = services.getAdmins();
-		} catch(UserUnavailableException e) {
-			Response r = new Response();
-			r.setError("Admins not found");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(r);
 		} catch(RoleNotFoundException e) {
 			Response r = new Response();
-			r.setError("Role not found");
+			r.setError("Admins not found");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(r);
 		}
 		Response res = new Response();
@@ -74,17 +105,13 @@ public class LoginController {
 	}
 	
 	@GetMapping("/getCaptains")
-	public ResponseEntity<Response> getCptains(){
+	public ResponseEntity<Response> getCaptains(){
 		List<String> ls = null;
 		try {
 			ls = services.getCaptains();
-		} catch(UserUnavailableException e) {
-			Response r = new Response();
-			r.setError("Captains not found");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(r);
 		} catch(RoleNotFoundException e) {
 			Response r = new Response();
-			r.setError("Role not found");
+			r.setError("Captains not found");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(r);
 		}
 		Response res = new Response();
@@ -99,13 +126,9 @@ public class LoginController {
 		List<String> ls = null;
 		try {
 			ls = services.getPlayers();
-		} catch(UserUnavailableException e) {
-			Response r = new Response();
-			r.setError("Players not found");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(r);
 		} catch(RoleNotFoundException e) {
 			Response r = new Response();
-			r.setError("Role not found");
+			r.setError("Players not found");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(r);
 		}
 		Response res = new Response();
@@ -152,86 +175,77 @@ public class LoginController {
 		} 
 	}
     
-	@PostMapping("/saveRole")
-	public ResponseEntity<Response> saveRole(@RequestBody RoleDto role) {
-		try {
-			if(role.getRole()!=null && role.getRole()!="") {
-				try {
-					ResponseData resData = services.saveRole(role);
-					Response res = new Response();
-					res.setData(resData);
-					return ResponseEntity.status(HttpStatus.CREATED).body(res);
-				} catch(RoleAvailbaleException e) {
-					Response res = new Response();
-					res.setError("Role is present");
-					return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
-				}
-		
-			} else {
-				throw new IllegalRoleValueException();
-			}
-		} catch(IllegalRoleValueException e) {
-			Response res = new Response();
-			res.setError("Role is null or empty");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
-		}
-	}
+//	@PostMapping("/saveRole")
+//	public ResponseEntity<Response> saveRole(@RequestBody RoleDto role) {
+//		try {
+//			if(role.getRole()!=null && role.getRole()!="") {
+//				try {
+//					ResponseData resData = services.saveRole(role);
+//					Response res = new Response();
+//					res.setData(resData);
+//					return ResponseEntity.status(HttpStatus.CREATED).body(res);
+//				} catch(RoleAvailbaleException e) {
+//					Response res = new Response();
+//					res.setError("Role is present");
+//					return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+//				}
+//		
+//			} else {
+//				throw new IllegalRoleValueException();
+//			}
+//		} catch(IllegalRoleValueException e) {
+//			Response res = new Response();
+//			res.setError("Role is null or empty");
+//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+//		}
+//	}
 	
-	@PostMapping("/saveRoleToUser")
-	public ResponseEntity<Response> addRoleToUser(@RequestParam String username, @RequestParam String role) {
-		try {
-			if(username!=null && role!=null && username!="" && role!=""){
+	@PostMapping("/updateuserrole")
+	public ResponseEntity<Response> updateUserRole(@RequestBody UserDto udto) {
+
 				ResponseData resData =null;
 				try {
-					 resData = services.addRoleToUser(username,role);
-				} catch(NoSuchElementException e){
-					Response res = new Response();
-					res.setError("Username or Role unavailable");
-					return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
-				} catch(RoleReassignmentException e) {
+					 resData = services.updateUserRole(udto);
+				}catch(RoleReassignmentException e) {
 					Response res = new Response();
 					res.setError("Role has already been assigned");
+					return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+				} catch(IllegalRoleValueException e) {
+					Response res = new Response();
+					res.setError("Invalid Role");
 					return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
 				}
 				Response res = new Response();
 				res.setData(resData);
 				return ResponseEntity.status(HttpStatus.OK).body(res);
-				
-			} else {
-				throw new IllegalRoleOrUsernameValueException();
-			}
-		} catch(IllegalRoleOrUsernameValueException e) {
-			Response res = new Response();
-			res.setError("Role or Username null or empty");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
-		} 
-	}
-	
-	@DeleteMapping("/removeUserRole")
-	public ResponseEntity<Response> removeUserRole(String username, String role) {
-		try {
-			if(username!=null && role!=null && username!="" && role!=""){
-				ResponseData resData = null;
-				try {
-					resData = services.removeUserRole(username, role);
-				} catch(UserUnavailableException e){
-					Response res = new Response();
-					res.setError("Username Unavailable");
-					return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
-				}
-				Response res = new Response();
-				res.setData(resData);
-				return ResponseEntity.status(HttpStatus.OK).body(res);	
-			} else {
-				throw new IllegalRoleOrUsernameValueException();
-			}
-		} catch(IllegalRoleOrUsernameValueException e) {
-			Response res = new Response();
-			res.setError("Role or Username null or empty");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
-		}
 		
 	}
+	
+//	@DeleteMapping("/removeUserRole")
+//	public ResponseEntity<Response> removeUserRole(String username, String role) {
+//		try {
+//			if(username!=null && role!=null && username!="" && role!=""){
+//				ResponseData resData = null;
+//				try {
+//					resData = services.removeUserRole(username, role);
+//				} catch(UserUnavailableException e){
+//					Response res = new Response();
+//					res.setError("Username Unavailable");
+//					return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+//				}
+//				Response res = new Response();
+//				res.setData(resData);
+//				return ResponseEntity.status(HttpStatus.OK).body(res);	
+//			} else {
+//				throw new IllegalRoleOrUsernameValueException();
+//			}
+//		} catch(IllegalRoleOrUsernameValueException e) {
+//			Response res = new Response();
+//			res.setError("Role or Username null or empty");
+//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+//		}
+//		
+//	}
 	
 	@PostMapping("/login/loginuser")
 	public ResponseEntity<Response> getUser(@RequestBody UserDto udto) {

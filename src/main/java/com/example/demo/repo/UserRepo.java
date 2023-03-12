@@ -13,4 +13,6 @@ public interface UserRepo extends CrudRepository<UserEntity,Long> {
 	
 	public void deleteByusername(String username);
 	
+	public Iterable<UserEntity> findAllByrole(String role);
+	
 }

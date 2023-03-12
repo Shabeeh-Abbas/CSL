@@ -3,8 +3,10 @@ package com.example.demo.service.UserManagement;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import com.example.demo.exception.checked.IllegalRoleValueException;
 import com.example.demo.exception.checked.InvalidCredentialsException;
 import com.example.demo.exception.checked.PasswordIncorrectException;
+import com.example.demo.exception.checked.RoleFoundException;
 import com.example.demo.exception.checked.RoleNotFoundException;
 import com.example.demo.exception.checked.RoleReassignmentException;
 import com.example.demo.exception.checked.RoleUnavailableException;
@@ -17,21 +19,25 @@ import com.example.demo.user.UserDto;
 
 public interface LoginServicesInterface {
       
-	ResponseData saveUser(UserDto user);
+	ResponseData saveUser(UserDto user) throws UserRegisteredException;
 	
-	ResponseData saveRole(RoleDto role) throws RoleAvailbaleException;
+	List<String> getRoles() throws RoleNotFoundException;
 	
-	ResponseData addRoleToUser(String username, String role) throws NoSuchElementException,RoleReassignmentException;
+	List<String> postRoles(RoleDto rdto) throws RoleFoundException;
+	
+//	ResponseData saveRole(RoleDto role) throws RoleAvailbaleException;
+	
+	ResponseData updateUserRole(UserDto udto) throws RoleReassignmentException,IllegalRoleValueException;
 	
 	ResponseData getUser(String username, String password) throws InvalidCredentialsException;
 	
 	void removeUser(String username);
 	
-	List<String> getAdmins() throws UserUnavailableException,RoleNotFoundException;
+	List<String> getAdmins() throws RoleNotFoundException;
 	
-	List<String> getCaptains() throws UserUnavailableException,RoleNotFoundException;
+	List<String> getCaptains() throws RoleNotFoundException;
 	
-	List<String> getPlayers() throws UserUnavailableException,RoleNotFoundException;
+	List<String> getPlayers() throws RoleNotFoundException;
 	
 	List<String> getUsernames() throws UserUnavailableException;
 	
@@ -41,5 +47,5 @@ public interface LoginServicesInterface {
 	
 	ResponseData updateEmail(String username, String password , String newEmail) throws PasswordIncorrectException,UserUnavailableException;
 	
-	ResponseData removeUserRole(String username, String role) throws UserUnavailableException;
+//	ResponseData removeUserRole(String username, String role) throws UserUnavailableException;
 }

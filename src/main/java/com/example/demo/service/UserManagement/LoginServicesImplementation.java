@@ -2,20 +2,23 @@ package com.example.demo.service.UserManagement;
 
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
-
+import java.util.Iterator;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.Team.TeamEntity;
+import com.example.demo.exception.checked.IllegalRoleValueException;
 import com.example.demo.exception.checked.InvalidCredentialsException;
 import com.example.demo.exception.checked.PasswordIncorrectException;
+import com.example.demo.exception.checked.RoleFoundException;
 import com.example.demo.exception.checked.RoleNotFoundException;
 import com.example.demo.exception.checked.RoleReassignmentException;
 import com.example.demo.exception.checked.RoleUnavailableException;
@@ -28,6 +31,9 @@ import com.example.demo.response.ResponseData;
 import com.example.demo.role.RoleAdapter;
 import com.example.demo.role.RoleDto;
 import com.example.demo.role.Roles;
+//import com.example.demo.role.RoleAdapter;
+//import com.example.demo.role.RoleDto;
+//import com.example.demo.role.Roles;
 import com.example.demo.user.UserAdapter;
 import com.example.demo.user.UserDto;
 import com.example.demo.user.UserEntity;
@@ -38,71 +44,63 @@ import com.example.demo.user.UserEntity;
 public class LoginServicesImplementation implements LoginServicesInterface {
 	
 	@Autowired
-	private UserRepo urepo;
+	private UserRepo urepo;  
 	
 	@Autowired
-    private RoleRepo rrepo;
+	private RoleRepo rrepo;  
 	
 	@Override
 	public ResponseData saveUser(UserDto udto) throws UserRegisteredException{
 		// TODO Auto-generated method stub
 		  ResponseData resData = null;
 		  if(urepo.findByusername(udto.getUsername()).isEmpty()) {
+			  udto.setUserRole("PLAYER");
 			  UserAdapter ua = new UserAdapter();
-			  UserEntity u = ua.userDtoToDao(udto) ;
+			  UserEntity u = ua.userDtoToDao(udto);
 			  urepo.save(u);
-			  resData = udto;
+			  resData = ua.userDaoToDto(u);
 			  return resData;
 		  } else {
 			    throw new  UserRegisteredException();
 		  }
-    }
+     }
 
-	@Override
-	public ResponseData saveRole(RoleDto rdto) throws RoleAvailbaleException{
-		// TODO Auto-generated method stub
-		
-		if(rrepo.findByrole(rdto.getRole()).isEmpty()) {
-			ResponseData resData = null;
-			RoleAdapter ra = new RoleAdapter();
-			Roles r = ra.roleDtoToDao(rdto);
-			rrepo.save(r);
-			resData = (ResponseData) ra.roleDaoToDto(r);
-			return resData;
-		} else {
-			throw new RoleAvailbaleException();
-		}
+//	@Override
+//	public ResponseData saveRole(RoleDto rdto) throws RoleAvailbaleException{
+//		// TODO Auto-generated method stub
+//		Optional<Roles> opr = rrepo.findByrole(rdto.getRole());
+//		if(opr.isEmpty()) {
+//			ResponseData resData = null;
+//			RoleAdapter ra = new RoleAdapter();
+//			Roles r = ra.roleDtoToDao(rdto);
+//			rrepo.save(r);
+//			resData = ra.roleDaoToDto(r);
+//			return resData;
+//		} else {
+//			throw new RoleAvailbaleException();
+//		}
 				
-	}
+//	}
 
 	@Override
-	public ResponseData addRoleToUser(String username, String role) throws NoSuchElementException,RoleReassignmentException{
+	public ResponseData updateUserRole(UserDto udto) throws RoleReassignmentException,IllegalRoleValueException{
 		// TODO Auto-generated method stub
-		Optional<UserEntity> u = null;
-		Optional<Roles> r = null;
-		try {
-			 u = urepo.findByusername(username);
-			 r = rrepo.findByrole(role);	
-		} catch(NoSuchElementException e){
-			throw new NoSuchElementException();
+		if(udto.getUserRole().equals("ADMIN") || udto.getUserRole().equals("PLAYER") || udto.getUserRole().equals("CAPTAIN")) {
+			Optional<UserEntity>  u = urepo.findByusername(udto.getUsername());
+			if(u.get().getUserRole().equals(udto.getUserRole())) {
+				throw new RoleReassignmentException();
+			} else {
+				ResponseData resData = null;
+				u.get().setUserRole(udto.getUserRole());
+				urepo.save(u.get());
+				UserAdapter ua = new UserAdapter();
+				UserDto uDto = ua.userDaoToDto(u.get());
+				return uDto;
+			}
+		}else {
+			throw new IllegalRoleValueException();
 		}
 		
-		if(u.get().getUserRoles().contains(r.get())) {
-			throw new RoleReassignmentException();
-		}
-		ResponseData resData = null;
-		u.get().getUserRoles().add(r.get());
-		urepo.save(u.get());
-		UserAdapter ua = new UserAdapter();
-		RoleAdapter ra = new RoleAdapter();
-		UserDto udto = ua.userDaoToDto(u.get());
-		List<RoleDto> ls = new ArrayList<>();
-		u.get().getUserRoles().forEach(roles -> {
-			ls.add(ra.roleDaoToDto(roles));
-		});
-		udto.setUserRoles(ls);
-		resData =  udto;
-		return resData;
 	}
 
 	@Override
@@ -112,7 +110,6 @@ public class LoginServicesImplementation implements LoginServicesInterface {
 		UserDto udto = null;
 		if(u.isPresent() && u.get().getPassword().equals(password)){
 			UserAdapter ua = new UserAdapter();
-			RoleAdapter ra = new RoleAdapter();
 			udto = ua.userDaoToDto(u.get());
 			return udto;
 		} else {
@@ -138,7 +135,7 @@ public class LoginServicesImplementation implements LoginServicesInterface {
 			ue.setPassword(newUsername);
 			urepo.save(ue);
 			UserAdapter ua = new UserAdapter ();
-			RoleAdapter ra = new RoleAdapter();
+		
 			UserDto udto = ua.userDaoToDto(ue);
 			resData = udto;
 			return resData;
@@ -158,7 +155,7 @@ public class LoginServicesImplementation implements LoginServicesInterface {
 			ue.setPassword(newPassword);
 			urepo.save(ue);
 			UserAdapter ua = new UserAdapter ();
-			RoleAdapter ra = new RoleAdapter();
+			
 			UserDto udto = ua.userDaoToDto(ue);
 			resData = udto;
 			return resData;
@@ -178,7 +175,7 @@ public class LoginServicesImplementation implements LoginServicesInterface {
 			ue.setEmail(newEmail);
 			urepo.save(ue);
 			UserAdapter ua = new UserAdapter ();
-			RoleAdapter ra = new RoleAdapter();
+			
 			UserDto udto = ua.userDaoToDto(ue);
 			resData = udto;
 			return resData;
@@ -188,32 +185,32 @@ public class LoginServicesImplementation implements LoginServicesInterface {
 		}
 	}
 
-	@Override
-	public ResponseData removeUserRole(String username, String role) throws UserUnavailableException{
-		// TODO Auto-generated method stub
-		Optional<UserEntity> u = urepo.findByusername(username);
-		ResponseData resData = null;
-		if(u.isPresent()) {
-			UserEntity ue = u.get();
-			Set<Roles> newSet = new HashSet<>();
-			u.get().getUserRoles().forEach(roles -> {
-			     if(!role.equals(roles.getRole())){
-			    	 newSet.add(roles);
-			     }
-			});
-			ue.setUserRoles(newSet);
-			urepo.save(ue);
-			UserAdapter ua = new UserAdapter();
-			RoleAdapter ra = new RoleAdapter();
-			UserDto udto = ua.userDaoToDto(ue);
-			resData = udto;
-			return resData;
-		}
-		else {
-			throw new UserUnavailableException();
-		}
-		
-	}
+//	@Override
+//	public ResponseData removeUserRole(String username, String role) throws UserUnavailableException{
+//		// TODO Auto-generated method stub
+//		Optional<UserEntity> u = urepo.findByusername(username);
+//		ResponseData resData = null;
+//		if(u.isPresent()) {
+//			UserEntity ue = u.get();
+//			Set<Roles> newSet = new HashSet<>();
+//			u.get().getUserRoles().forEach(roles -> {
+//			     if(!role.equals(roles.getRole())){
+//			    	 newSet.add(roles);
+//			     }
+//			});
+//			ue.setUserRoles(newSet);
+//			urepo.save(ue);
+//			UserAdapter ua = new UserAdapter();
+//			RoleAdapter ra = new RoleAdapter();
+//			UserDto udto = ua.userDaoToDto(ue);
+//			resData = udto;
+//			return resData;
+//		}
+//		else {
+//			throw new UserUnavailableException();
+//		}
+//		
+//	}
 
 	@Override
 	public List<String> getUsernames() throws UserUnavailableException{
@@ -231,56 +228,81 @@ public class LoginServicesImplementation implements LoginServicesInterface {
 		}
 	} 
 	
-	public List<String> getAdmins() throws UserUnavailableException,RoleNotFoundException{
-		Optional<Roles> opRole = rrepo.findByrole("ADMIN");
-	    if(opRole.isPresent() && opRole.get()!=null) {
-	    	if(opRole.get().getUsers().size()>0 && opRole.get().getUsers()!=null) {
-	    		List<String> ls = new ArrayList<>();
-	    		opRole.get().getUsers().forEach(user -> {
+	public List<String> getAdmins() throws RoleNotFoundException{
+		Iterable<UserEntity> itue = urepo.findAllByrole("ADMIN");
+	    if(itue!=null && ((Collection<UserEntity>) itue).size()>0) {
+	    	List<String> ls = new ArrayList<>();
+	    		itue.forEach(user -> {
 	    			ls.add(user.getUsername());
 	    		});
 	    		return ls;
-	    	} else {
-	    		throw new UserUnavailableException();
-	    	}
-	    } else {
+	    	} 
+	     else {
 	    	throw new RoleNotFoundException();
-	    }
+	  }
+   }
+	
+	
+	public List<String> getCaptains() throws RoleNotFoundException{
+		Iterable<UserEntity> itue = urepo.findAllByrole("CAPTAIN");
+	    if(itue!=null && ((Collection<UserEntity>) itue).size()>0) {
+	    	List<String> ls = new ArrayList<>();
+	    		itue.forEach(user -> {
+	    			ls.add(user.getUsername());
+	    		});
+	    		return ls;
+	    	} 
+	     else {
+	    	throw new RoleNotFoundException();
+	  }
 	}
 	
-	
-	public List<String> getCaptains() throws UserUnavailableException,RoleNotFoundException{
-		Optional<Roles> opRole = rrepo.findByrole("CAPTAIN");
-	    if(opRole.isPresent() && opRole.get()!=null) {
-	    	if(opRole.get().getUsers().size()>0 && opRole.get().getUsers()!=null) {
-	    		List<String> ls = new ArrayList<>();
-	    		opRole.get().getUsers().forEach(user -> {
+	public List<String> getPlayers() throws RoleNotFoundException{
+		Iterable<UserEntity> itue = urepo.findAllByrole("PLAYER");
+	    if(itue!=null && ((Collection<UserEntity>) itue).size()>0) {
+	    	List<String> ls = new ArrayList<>();
+	    		itue.forEach(user -> {
 	    			ls.add(user.getUsername());
 	    		});
 	    		return ls;
-	    	} else {
-	    		throw new UserUnavailableException();
-	    	}
-	    } else {
+	    	} 
+	     else {
 	    	throw new RoleNotFoundException();
-	    }
+	  }
 	}
-	
-	public List<String> getPlayers() throws UserUnavailableException,RoleNotFoundException{
-		Optional<Roles> opRole = rrepo.findByrole("ADMIN");
-	    if(opRole.isPresent() && opRole.get()!=null) {
-	    	if(opRole.get().getUsers().size()>0 && opRole.get().getUsers()!=null) {
-	    		List<String> ls = new ArrayList<>();
-	    		opRole.get().getUsers().forEach(user -> {
-	    			ls.add(user.getUsername());
-	    		});
-	    		return ls;
-	    	} else {
-	    		throw new UserUnavailableException();
-	    	}
-	    } else {
-	    	throw new RoleNotFoundException();
-	    }
+
+	@Override
+	public List<String> getRoles() throws RoleNotFoundException{
+		// TODO Auto-generated method stub
+		Iterable<Roles> itr = rrepo.findAll();
+		if(itr!=null && ((Collection<Roles>) itr).size()>0) {
+			List<String> ls = new ArrayList<String>();
+			itr.forEach(r ->{
+				ls.add(r.getRole());
+			});
+			return ls;
+		} else {
+			throw new RoleNotFoundException();
+		}
+		
+	}
+
+	@Override
+	public List<String> postRoles(RoleDto rdto) throws RoleFoundException{
+		// TODO Auto-generated method stub
+		Optional<Roles> opr = rrepo.findByrole(rdto.getRole());
+		if(opr.isPresent()) {
+			throw new RoleFoundException();
+		}
+		RoleAdapter ra = new RoleAdapter();
+		Roles r = ra.roleDtoToDao(rdto);
+		rrepo.save(r);
+		Iterable<Roles> itr = rrepo.findAll();
+		List<String> ls = new ArrayList<String>();
+		itr.forEach(role ->{
+			ls.add(role.getRole());
+		});
+		return ls;
 	}
 
 	

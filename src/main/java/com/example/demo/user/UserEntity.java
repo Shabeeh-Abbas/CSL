@@ -3,7 +3,7 @@ package com.example.demo.user;
 import java.util.Set;
 
 import com.example.demo.Team.TeamEntity;
-import com.example.demo.role.Roles;
+
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -35,12 +35,8 @@ public class UserEntity {
 	@Column(name="Email", unique = true)
 	private String email;
 	
-	@ManyToMany(cascade= {CascadeType.MERGE, CascadeType.PERSIST} ,fetch = FetchType.LAZY)
-	@JoinTable(
-			name="User_Role_table",
-			joinColumns= @JoinColumn(name="UID"),
-			inverseJoinColumns = @JoinColumn(name="RID"))
-	private Set<Roles> userRoles;
+	@Column(name="Role")
+	private String role;
 	
 	@OneToOne
 	@JoinColumn(name="Team_id")
@@ -78,12 +74,12 @@ public class UserEntity {
 		this.email = email;
 	}
 
-	public Set<Roles> getUserRoles() {
-		return userRoles;
+	public String getUserRole() {
+		return role;
 	}
 
-	public void setUserRoles(Set<Roles> userRoles) {
-		this.userRoles = userRoles;
+	public void setUserRole(String userRoles) {
+		this.role = userRoles;
 	}
 	
 }

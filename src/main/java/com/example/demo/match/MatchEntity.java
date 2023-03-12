@@ -9,9 +9,14 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import com.example.demo.Scoreboard.Scoreboard;
 import com.example.demo.Team.*;
 
 @Table(name = "Match_Table")
@@ -21,22 +26,43 @@ public class MatchEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name="Match_id")
-	private Long mid;
+	private Long id;
 
 	@Column(name="Date")
 	private String date;
 	
 	@Column(name="Match_Name")
 	private String matchName;
-   
-	@Column(name="Winner")
-	private String winner;
 
-	@OneToMany(mappedBy = "matchId", cascade= CascadeType.ALL, fetch = FetchType.LAZY)
+	@ManyToMany(cascade= CascadeType.ALL, fetch = FetchType.LAZY)
+	@JoinTable(
+		name="Team_Match_table",
+		joinColumns = @JoinColumn(name="Team_id"),
+		inverseJoinColumns = @JoinColumn(name="Match_id") 
+	)
 	private Set<TeamEntity> teams;
+	
+	@OneToOne(mappedBy="match")
+	private Scoreboard scoreboard;
 	
 	public String getMatch() {
 		return matchName;
+	}
+
+	public String getMatchName() {
+		return matchName;
+	}
+
+	public void setMatchName(String matchName) {
+		this.matchName = matchName;
+	}
+
+	public Scoreboard getScoreboard() {
+		return scoreboard;
+	}
+
+	public void setScoreboard(Scoreboard scoreboard) {
+		this.scoreboard = scoreboard;
 	}
 
 	public void setMatch(String match) {
@@ -49,14 +75,6 @@ public class MatchEntity {
 
 	public void setDate(String date) {
 		this.date = date;
-	}
-
-	public String getWinner() {
-		return winner;
-	}
-
-	public void setWinner(String winner) {
-		this.winner = winner;
 	}
 
 	public Set<TeamEntity> getTeams() {

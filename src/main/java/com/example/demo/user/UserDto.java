@@ -3,7 +3,7 @@ package com.example.demo.user;
 import java.util.List;
 
 import com.example.demo.response.ResponseData;
-import com.example.demo.role.RoleDto;
+
 
 
 public class UserDto implements ResponseData{
@@ -17,7 +17,7 @@ public class UserDto implements ResponseData{
 	private String email;
 	
 	
-	private List<RoleDto> userRoles;
+	private String role;
 
 
 	public String getUsername() {
@@ -50,13 +50,13 @@ public class UserDto implements ResponseData{
 	}
 
 
-	public List<RoleDto> getUserRoles() {
-		return userRoles;
+	public String getUserRole() {
+		return role;
 	}
 
 
-	public void setUserRoles(List<RoleDto> userRoles) {
-		this.userRoles = userRoles;
+	public void setUserRole(String userRole) {
+		this.role = userRole;
 	}
 
 }

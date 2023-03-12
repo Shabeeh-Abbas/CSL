@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,23 +24,22 @@ import com.example.demo.exception.checked.TeamAvailableException;
 import com.example.demo.response.Response;
 import com.example.demo.response.ResponseData;
 import com.example.demo.service.TeamManagement.TeamManagementServicesImplementation;
+import com.example.demo.user.UserDto;
+import com.example.demo.user.UserEntity;
 
 @RestController
 @RequestMapping("/csl-1.0/rest/api")
+@CrossOrigin(origins ="*")
 public class TeamManagementController {
        
 	@Autowired
 	public TeamManagementServicesImplementation services;
 	
 	@GetMapping("/getTeam")
-	public ResponseEntity<Response> getTeam(@RequestParam String team){
-		try {
-			if(team==null || team==""){
-				throw new NullPointerException();
-			} else {
+	public ResponseEntity<Response> getTeam(@RequestBody TeamDto tdto){
 				ResponseData resData = null;
 				try {
-				    resData = services.getTeam(team);
+				    resData = services.getTeam(tdto.getTeamName());
 				} catch(NoSuchElementException e){
 					Response r = new Response();
 					r.setError("Team not found");
@@ -48,13 +48,9 @@ public class TeamManagementController {
 				Response r = new Response();
 				r.setData(resData);
 				return ResponseEntity.status(HttpStatus.OK).body(r);
-			}
-		} catch(NullPointerException e){
-			Response r = new Response();
-			r.setError("Parameter null or empty");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(r);
-		}
 	}
+		
+	
 	
 	@PostMapping("/saveTeam")
 	public ResponseEntity<Response> saveTeam(@RequestBody TeamDto tdto) throws NullPointerException{
@@ -107,11 +103,11 @@ public class TeamManagementController {
 	}
 	
 	@PostMapping("/addPlayer")
-	public ResponseEntity<Response> addPlayer(@RequestParam String team,@RequestParam  String player){
+	public ResponseEntity<Response> addPlayer(@RequestBody TeamDto tdto ,@RequestBody  UserDto udto){
 			
 				ResponseData resData = null;
 				try {
-					resData = services.addPlayer(team, player);
+					resData = services.addPlayer(tdto.getTeamName(), udto.getUsername());
 				} catch(NoSuchElementException e) {
 					Response r = new Response();
 					r.setError("Team or player not found");
@@ -125,10 +121,10 @@ public class TeamManagementController {
 	
 	
 	@DeleteMapping("/remPlayer")
-	public ResponseEntity<Response> remPlayer(@RequestParam String team,@RequestParam  String player){
+	public ResponseEntity<Response> remPlayer(@RequestBody TeamDto tdto ,@RequestBody  UserDto udto){
 		ResponseData resData = null;
 		try {
-			resData = services.remPlayer(team, player);
+			resData = services.remPlayer(tdto.getTeamName(), udto.getUsername());
 		} catch(NoSuchElementException e) {
 			    Response r = new Response();
 				r.setError("Team or player not found");
@@ -159,10 +155,10 @@ public class TeamManagementController {
 	}
 	
 	@GetMapping("/getTeamPlayerNames")
-	public ResponseEntity<Response> getTeamPlayerNames(@RequestParam String team){
+	public ResponseEntity<Response> getTeamPlayerNames(@RequestBody TeamDto tdto){
 		List<String> ls = null;
 		try {
-			ls = services.getTeamPlayerNames(team);
+			ls = services.getTeamPlayerNames(tdto.getTeamName());
 		} catch(NoTeamsPresentException e) {
 			Response r = new Response();
 			r.setError("No Teams Found");

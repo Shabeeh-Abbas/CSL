@@ -11,9 +11,10 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-//@Table(name="Roles_table")
+@Table(name="Roles_table")
 @Entity
 public class Roles {
 	
@@ -24,19 +25,6 @@ public class Roles {
 	@Column(name="Role")
 	private String role;
 	
-	@ManyToMany(mappedBy="userRoles")
-	private Set<UserEntity> users;
-
-
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
 	public String getRole() {
 		return role;
 	}
@@ -44,13 +32,28 @@ public class Roles {
 	public void setRole(String role) {
 		this.role = role;
 	}
-
-	public Set<UserEntity> getUsers() {
-		return users;
-	}
-
-	public void setUsers(Set<UserEntity> users) {
-		this.users = users;
-	}
-
-}
+}	
+//	@OneToMany(mappedBy="userRole")
+//	private Set<UserEntity> users;
+//
+//
+//
+//	public Long getId() {
+//		return id;
+//	}
+//
+//	public void setId(Long id) {
+//		this.id = id;
+//	}
+//
+	
+//
+//	public Set<UserEntity> getUsers() {
+//		return users;
+//	}
+//
+//	public void setUsers(Set<UserEntity> users) {
+//		this.users = users;
+//	}
+//
+//}

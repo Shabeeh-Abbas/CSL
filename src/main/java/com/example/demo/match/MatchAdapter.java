@@ -13,7 +13,6 @@ public class MatchAdapter {
 	public MatchDto matchDaoToDto(MatchEntity mdao) {
 		MatchDto mdto = new MatchDto();
 		mdto.setDate(mdao.getDate());
-		mdto.setWinner(mdao.getWinner());
 		List<TeamDto> ls = new ArrayList<>();
 		if(mdao.getTeams().size()>0) {
 			TeamAdapter ta = new TeamAdapter();
@@ -28,7 +27,6 @@ public class MatchAdapter {
     public MatchEntity matchDtoToDao(MatchDto mdto) {
     	MatchEntity mdao = new MatchEntity();
 		mdao.setDate(mdto.getDate());
-		mdao.setWinner(mdto.getWinner());
 		Set<TeamEntity> set = new HashSet<>();
 		if(mdto.getTeams().size()>0) {
 			TeamAdapter ta = new TeamAdapter();

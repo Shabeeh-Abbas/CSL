@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.example.demo.Team.TeamAdapter;
 import com.example.demo.Team.TeamEntity;
+import com.example.demo.exception.checked.MatchNotFoundException;
 import com.example.demo.match.MatchAdapter;
 import com.example.demo.match.MatchDto;
 import com.example.demo.match.MatchEntity;
@@ -57,31 +58,30 @@ public class MatchManagementServicesImplementation implements MatchManagementSer
 		}
 	}
 
-	@Override
-	public ResponseData setMatchWinner(String match, String teamName) throws EntityNotFoundException{
-		// TODO Auto-generated method stub
-		Optional<TeamEntity> opte = trepo.findByteamName(teamName);
-		Optional<MatchEntity> opme = mrepo.findBymatchName(match);
-		if(opte.isPresent() && opme.isPresent()) {
-		       opme.get().setWinner(opte.get().getTeamName());
-		       mrepo.save(opme.get());
-		       MatchAdapter ma = new MatchAdapter();
-			   MatchDto mdto = ma.matchDaoToDto(opme.get());
-			   return mdto;
-		} else {
-			throw new EntityNotFoundException();
-		}
-	}
+//	@Override
+//	public ResponseData setMatchWinner(String match, String teamName) throws EntityNotFoundException{
+//		// TODO Auto-generated method stub
+//		Optional<TeamEntity> opte = trepo.findByteamName(teamName);
+//		Optional<MatchEntity> opme = mrepo.findBymatchName(match);
+//		if(opte.isPresent() && opme.isPresent()) {
+//		       opme.get().setWinner(opte.get().getTeamName());
+//		       mrepo.save(opme.get());
+//		       MatchAdapter ma = new MatchAdapter();
+//			   MatchDto mdto = ma.matchDaoToDto(opme.get());
+//			   return mdto;
+//		} else {
+//			throw new EntityNotFoundException();
+//		}
+//	}
 
 	@Override
-	public List<ResponseData> getMatches() throws EntityNotFoundException{
+	public List<String> getAllMatches() throws EntityNotFoundException{
 		// TODO Auto-generated method stub
 		Iterable<MatchEntity> itme = mrepo.findAll();
 		if(itme!=null) {
-			List<ResponseData> ls = null;
-			MatchAdapter ma = new MatchAdapter();
+			List<String> ls = null;
 			itme.forEach(match -> {
-				ls.add(ma.matchDaoToDto(match));
+				ls.add(match.getMatch());
 			});
 			return ls;
 		} else {
@@ -102,17 +102,17 @@ public class MatchManagementServicesImplementation implements MatchManagementSer
 		}
 	}
 
-	@Override
-	public String getMatchWinner(String match) throws EntityNotFoundException{
-		// TODO Auto-generated method stub
-		Optional<MatchEntity> opme = mrepo.findBymatchName(match);
-		if(opme.isPresent() && opme.get() !=null && opme.get().getWinner()!=null) {
-			return opme.get().getWinner();
-		}
-		else {
-			throw new EntityNotFoundException();
-		}
-	}
+//	@Override
+//	public String getMatchWinner(String match) throws EntityNotFoundException{
+//		// TODO Auto-generated method stub
+//		Optional<MatchEntity> opme = mrepo.findBymatchName(match);
+//		if(opme.isPresent() && opme.get() !=null && opme.get().getWinner()!=null) {
+//			return opme.get().getWinner();
+//		}
+//		else {
+//			throw new EntityNotFoundException();
+//		}
+//	}
 
 
 	@Override
@@ -132,19 +132,31 @@ public class MatchManagementServicesImplementation implements MatchManagementSer
 	}
 
 	@Override
-	public List<String> getWinnerTeamMembers(String match) throws EntityNotFoundException{
+	public ResponseData getMatch(MatchDto mdto) throws MatchNotFoundException{
 		// TODO Auto-generated method stub
-		Optional<MatchEntity> opme = mrepo.findBymatchName(match);
-		Optional<TeamEntity> opte = trepo.findByteamName(opme.get().getWinner());
-		List<String> ls = null;
-		if(opme.isPresent() && opme.get() !=null && opte.get()!=null && opte.isPresent() && opte.get().getPlayers().size()>0 && opte.get().getPlayers()!=null){
-			opte.get().getPlayers().forEach(players -> {
-				ls.add(players.getUsername());
-			});
-			return ls;
+		Optional<MatchEntity> opme = mrepo.findBymatchName(mdto.getMatch());
+		if(opme.isPresent()) {
+			MatchAdapter ma = new MatchAdapter();
+			return ma.matchDaoToDto(opme.get());
 		} else {
-			throw new EntityNotFoundException();
+			throw new MatchNotFoundException();
 		}
 	}
+
+//	@Override
+//	public List<String> getWinnerTeamMembers(String match) throws EntityNotFoundException{
+//		// TODO Auto-generated method stub
+//		Optional<MatchEntity> opme = mrepo.findBymatchName(match);
+//		Optional<TeamEntity> opte = trepo.findByteamName(opme.get().getWinner());
+//		List<String> ls = null;
+//		if(opme.isPresent() && opme.get() !=null && opte.get()!=null && opte.isPresent() && opte.get().getPlayers().size()>0 && opte.get().getPlayers()!=null){
+//			opte.get().getPlayers().forEach(players -> {
+//				ls.add(players.getUsername());
+//			});
+//			return ls;
+//		} else {
+//			throw new EntityNotFoundException();
+//		}
+//	}
 
 }

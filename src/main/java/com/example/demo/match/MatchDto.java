@@ -2,6 +2,8 @@ package com.example.demo.match;
 
 import java.util.List;
 
+import com.example.demo.Scoreboard.Scoreboard;
+import com.example.demo.Scoreboard.ScoreboardDto;
 import com.example.demo.Team.TeamDto;
 import com.example.demo.response.ResponseData;
 
@@ -10,11 +12,11 @@ public class MatchDto implements ResponseData{
     
 	private String date;
 	
-	private String winner;
-	
 	private String match;
 
 	private List<TeamDto> teams;
+	
+	private ScoreboardDto scoreboardDto;
 
 	public String getDate() {
 		return date;
@@ -30,14 +32,6 @@ public class MatchDto implements ResponseData{
 
 	public void setDate(String date) {
 		this.date = date;
-	}
-
-	public String getWinner() {
-		return winner;
-	}
-
-	public void setWinner(String winner) {
-		this.winner = winner;
 	}
 
 	public List<TeamDto> getTeams() {
